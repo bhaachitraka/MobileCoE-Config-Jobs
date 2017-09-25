@@ -1,0 +1,444 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<project>
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>10</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>10</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.plugins.global__variable__string__parameter.GlobalVariableStringParameterDefinition plugin="global-variable-string-parameter@1.2">
+          <name>COMMON_PROP_FILE_LOCATION</name>
+          <description></description>
+          <defaultValue>F:\Work\Projects\Alticor\PropertiesFiles</defaultValue>
+        </hudson.plugins.global__variable__string__parameter.GlobalVariableStringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.0.1">
+      <maxConcurrentPerNode>0</maxConcurrentPerNode>
+      <maxConcurrentTotal>0</maxConcurrentTotal>
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit></paramsToUseForLimit>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+  </properties>
+  <scm class="org.jenkinsci.plugins.multiplescms.MultiSCM" plugin="multiple-scms@0.6">
+    <scms>
+      <hudson.plugins.git.GitSCM plugin="git@3.5.1">
+        <configVersion>2</configVersion>
+        <userRemoteConfigs>
+          <hudson.plugins.git.UserRemoteConfig>
+            <url>https://github.com/sureshj419/Configurations.git</url>
+            <credentialsId>github</credentialsId>
+          </hudson.plugins.git.UserRemoteConfig>
+        </userRemoteConfigs>
+        <branches>
+          <hudson.plugins.git.BranchSpec>
+            <name>*/master</name>
+          </hudson.plugins.git.BranchSpec>
+        </branches>
+        <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+        <gitTool>Default</gitTool>
+        <submoduleCfg class="list"/>
+        <extensions>
+          <hudson.plugins.git.extensions.impl.CleanBeforeCheckout/>
+          <hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+            <relativeTargetDir>$COMMON_PROP_FILE_LOCATION</relativeTargetDir>
+          </hudson.plugins.git.extensions.impl.RelativeTargetDirectory>
+        </extensions>
+      </hudson.plugins.git.GitSCM>
+      <hudson.plugins.git.GitSCM plugin="git@3.5.1">
+        <configVersion>2</configVersion>
+        <userRemoteConfigs>
+          <hudson.plugins.git.UserRemoteConfig>
+            <url>https://github.com/sureshj419/Alticor.git</url>
+            <credentialsId>github</credentialsId>
+          </hudson.plugins.git.UserRemoteConfig>
+        </userRemoteConfigs>
+        <branches>
+          <hudson.plugins.git.BranchSpec>
+            <name>*/master</name>
+          </hudson.plugins.git.BranchSpec>
+        </branches>
+        <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+        <gitTool>Default</gitTool>
+        <submoduleCfg class="list"/>
+        <extensions>
+          <hudson.plugins.git.extensions.impl.CleanBeforeCheckout/>
+        </extensions>
+      </hudson.plugins.git.GitSCM>
+    </scms>
+  </scm>
+  <canRoam>true</canRoam>
+  <disabled>false</disabled>
+  <blockBuildWhenDownstreamBuilding>false</blockBuildWhenDownstreamBuilding>
+  <blockBuildWhenUpstreamBuilding>false</blockBuildWhenUpstreamBuilding>
+  <triggers>
+    <hudson.triggers.TimerTrigger>
+      <spec>H(0-15) 6,12,18 * * *</spec>
+    </hudson.triggers.TimerTrigger>
+    <com.cloudbees.jenkins.GitHubPushTrigger plugin="github@1.28.0">
+      <spec></spec>
+    </com.cloudbees.jenkins.GitHubPushTrigger>
+  </triggers>
+  <concurrentBuild>false</concurrentBuild>
+  <builders>
+    <hudson.tasks.Shell>
+      <command>cd &quot;$WORKSPACE/ci_config&quot;
+
+grep -v &apos;^[[:space:]]*$&apos; ${appidkey}_Config.properties &gt; ${appidkey}_ConfigNew.properties
+
+rm -rf ${appidkey}_Config.properties
+
+tr -d &apos;\r\f&apos; &lt;${appidkey}_ConfigNew.properties &gt;${appidkey}_Config.properties
+
+rm -rf ${PROP_FILE_NAME}New.properties
+
+cd &quot;$COMMON_PROP_FILE_LOCATION/ci_config/ScriptUtils&quot;
+
+tr -d &apos;\r\f&apos; &lt;KickStarterScript.sh &gt;KickStarterScriptNew.sh
+
+rm -rf KickStarterScript.sh
+
+mv KickStarterScriptNew.sh KickStarterScript.sh
+
+
+chmod 777 KickStarterScript.sh
+
+CONFIG_FILE=&quot;$WORKSPACE\\ci_config\\${appidkey}_Config.properties&quot;
+
+./KickStarterScript.sh &quot;$CONFIG_FILE&quot;</command>
+    </hudson.tasks.Shell>
+    <EnvInjectBuilder plugin="envinject@2.1.3">
+      <info>
+        <propertiesFilePath>${WORKSPACE}\ci_config\${appidkey}_Config.properties</propertiesFilePath>
+      </info>
+    </EnvInjectBuilder>
+    <org.jenkinsci.plugins.conditionalbuildstep.ConditionalBuilder plugin="conditional-buildstep@1.3.6">
+      <runner class="org.jenkins_ci.plugins.run_condition.BuildStepRunner$Fail" plugin="run-condition@1.0"/>
+      <runCondition class="org.jenkins_ci.plugins.run_condition.logic.And" plugin="run-condition@1.0">
+        <conditions>
+          <org.jenkins__ci.plugins.run__condition.logic.ConditionContainer>
+            <condition class="org.jenkins_ci.plugins.run_condition.core.StringsMatchCondition">
+              <arg1>${executePipeline}</arg1>
+              <arg2>false</arg2>
+              <ignoreCase>true</ignoreCase>
+            </condition>
+          </org.jenkins__ci.plugins.run__condition.logic.ConditionContainer>
+          <org.jenkins__ci.plugins.run__condition.logic.ConditionContainer>
+            <condition class="org.jenkins_ci.plugins.run_condition.core.StringsMatchCondition">
+              <arg1>${KCI_MACHINE_LABEL}</arg1>
+              <arg2>ios</arg2>
+              <ignoreCase>true</ignoreCase>
+            </condition>
+          </org.jenkins__ci.plugins.run__condition.logic.ConditionContainer>
+        </conditions>
+      </runCondition>
+      <conditionalbuilders>
+        <hudson.plugins.parameterizedtrigger.TriggerBuilder plugin="parameterized-trigger@2.35.1">
+          <configs>
+            <hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig>
+              <configs>
+                <org.jvnet.jenkins.plugins.nodelabelparameter.parameterizedtrigger.NodeLabelBuildParameter plugin="nodelabelparameter@1.7.2">
+                  <name>BuildMachine</name>
+                  <nodeLabel>${KCI_MACHINE_LABEL}</nodeLabel>
+                </org.jvnet.jenkins.plugins.nodelabelparameter.parameterizedtrigger.NodeLabelBuildParameter>
+                <hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+                  <properties>PROP_FILE_PATH=workspace/${JOB_NAME}/ci_config
+PROP_ZIP_FILE_NAME=${JOB_NAME}
+PROP_FILE_NAME=${appidkey}_Config
+BUILD_MACHINE=${KCI_MACHINE_LABEL}
+PROP_ROOT_DIR=${MAC_KCI_PROPERTIES_ROOT_DIRECTORY}
+EXECUTE_PIPELINE=${executePipeline}
+ANDROID_TARGET_SLAVE_IN_PIPELINE=ios
+PARENT_BUILD_NUMBER=${BUILD_NUMBER}</properties>
+                </hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+              </configs>
+              <projects>${KCI_MAC_SLAVE_INIT_JOB_NAME}</projects>
+              <condition>ALWAYS</condition>
+              <triggerWithNoParameters>false</triggerWithNoParameters>
+              <triggerFromChildProjects>false</triggerFromChildProjects>
+              <block>
+                <buildStepFailureThreshold>
+                  <name>FAILURE</name>
+                  <ordinal>2</ordinal>
+                  <color>RED</color>
+                  <completeBuild>true</completeBuild>
+                </buildStepFailureThreshold>
+                <unstableThreshold>
+                  <name>UNSTABLE</name>
+                  <ordinal>1</ordinal>
+                  <color>YELLOW</color>
+                  <completeBuild>true</completeBuild>
+                </unstableThreshold>
+                <failureThreshold>
+                  <name>FAILURE</name>
+                  <ordinal>2</ordinal>
+                  <color>RED</color>
+                  <completeBuild>true</completeBuild>
+                </failureThreshold>
+              </block>
+              <buildAllNodesWithLabel>false</buildAllNodesWithLabel>
+            </hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig>
+          </configs>
+        </hudson.plugins.parameterizedtrigger.TriggerBuilder>
+      </conditionalbuilders>
+    </org.jenkinsci.plugins.conditionalbuildstep.ConditionalBuilder>
+    <org.jenkinsci.plugins.conditionalbuildstep.ConditionalBuilder plugin="conditional-buildstep@1.3.6">
+      <runner class="org.jenkins_ci.plugins.run_condition.BuildStepRunner$Fail" plugin="run-condition@1.0"/>
+      <runCondition class="org.jenkins_ci.plugins.run_condition.logic.And" plugin="run-condition@1.0">
+        <conditions>
+          <org.jenkins__ci.plugins.run__condition.logic.ConditionContainer>
+            <condition class="org.jenkins_ci.plugins.run_condition.core.StringsMatchCondition">
+              <arg1>${executePipeline}</arg1>
+              <arg2>false</arg2>
+              <ignoreCase>true</ignoreCase>
+            </condition>
+          </org.jenkins__ci.plugins.run__condition.logic.ConditionContainer>
+          <org.jenkins__ci.plugins.run__condition.logic.ConditionContainer>
+            <condition class="org.jenkins_ci.plugins.run_condition.core.StringsMatchCondition">
+              <arg1>${KCI_MACHINE_LABEL}</arg1>
+              <arg2>windows</arg2>
+              <ignoreCase>true</ignoreCase>
+            </condition>
+          </org.jenkins__ci.plugins.run__condition.logic.ConditionContainer>
+        </conditions>
+      </runCondition>
+      <conditionalbuilders>
+        <hudson.plugins.parameterizedtrigger.TriggerBuilder plugin="parameterized-trigger@2.35.1">
+          <configs>
+            <hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig>
+              <configs>
+                <org.jvnet.jenkins.plugins.nodelabelparameter.parameterizedtrigger.NodeLabelBuildParameter plugin="nodelabelparameter@1.7.2">
+                  <name>BuildMachine</name>
+                  <nodeLabel>${KCI_MACHINE_LABEL}</nodeLabel>
+                </org.jvnet.jenkins.plugins.nodelabelparameter.parameterizedtrigger.NodeLabelBuildParameter>
+                <hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+                  <properties>PROP_FILE_PATH=workspace/${JOB_NAME}/ci_config
+PROP_ZIP_FILE_NAME=${JOB_NAME}
+PROP_FILE_NAME=${appidkey}_Config
+BUILD_MACHINE=${KCI_MACHINE_LABEL}
+PROP_ROOT_DIR=${WIN_KCI_PROPERTIES_ROOT_DIRECTORY}
+EXECUTE_PIPELINE=${executePipeline}
+ANDROID_TARGET_SLAVE_IN_PIPELINE=windows
+PARENT_BUILD_NUMBER=${BUILD_NUMBER}</properties>
+                </hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+              </configs>
+              <projects>${KCI_WIN_SLAVE_INIT_JOB_NAME}</projects>
+              <condition>ALWAYS</condition>
+              <triggerWithNoParameters>false</triggerWithNoParameters>
+              <triggerFromChildProjects>false</triggerFromChildProjects>
+              <block>
+                <buildStepFailureThreshold>
+                  <name>FAILURE</name>
+                  <ordinal>2</ordinal>
+                  <color>RED</color>
+                  <completeBuild>true</completeBuild>
+                </buildStepFailureThreshold>
+                <unstableThreshold>
+                  <name>UNSTABLE</name>
+                  <ordinal>1</ordinal>
+                  <color>YELLOW</color>
+                  <completeBuild>true</completeBuild>
+                </unstableThreshold>
+                <failureThreshold>
+                  <name>FAILURE</name>
+                  <ordinal>2</ordinal>
+                  <color>RED</color>
+                  <completeBuild>true</completeBuild>
+                </failureThreshold>
+              </block>
+              <buildAllNodesWithLabel>false</buildAllNodesWithLabel>
+            </hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig>
+          </configs>
+        </hudson.plugins.parameterizedtrigger.TriggerBuilder>
+      </conditionalbuilders>
+    </org.jenkinsci.plugins.conditionalbuildstep.ConditionalBuilder>
+    <org.jenkinsci.plugins.conditionalbuildstep.ConditionalBuilder plugin="conditional-buildstep@1.3.6">
+      <runner class="org.jenkins_ci.plugins.run_condition.BuildStepRunner$Fail" plugin="run-condition@1.0"/>
+      <runCondition class="org.jenkins_ci.plugins.run_condition.core.StringsMatchCondition" plugin="run-condition@1.0">
+        <arg1>${executePipeline}</arg1>
+        <arg2>true</arg2>
+        <ignoreCase>true</ignoreCase>
+      </runCondition>
+      <conditionalbuilders>
+        <hudson.plugins.parameterizedtrigger.TriggerBuilder plugin="parameterized-trigger@2.35.1">
+          <configs>
+            <hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig>
+              <configs>
+                <org.jvnet.jenkins.plugins.nodelabelparameter.parameterizedtrigger.NodeLabelBuildParameter plugin="nodelabelparameter@1.7.2">
+                  <name>BuildMachine</name>
+                  <nodeLabel>ios</nodeLabel>
+                </org.jvnet.jenkins.plugins.nodelabelparameter.parameterizedtrigger.NodeLabelBuildParameter>
+                <hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+                  <properties>PROP_FILE_PATH=workspace/${JOB_NAME}/ci_config
+PROP_ZIP_FILE_NAME=${JOB_NAME}
+PROP_FILE_NAME=${appidkey}_Config_Mac
+BUILD_MACHINE=ios
+PROP_ROOT_DIR=${MAC_KCI_PROPERTIES_ROOT_DIRECTORY}
+EXECUTE_PIPELINE=${executePipeline}
+ANDROID_TARGET_SLAVE_IN_PIPELINE=ios
+PARENT_BUILD_NUMBER=${BUILD_NUMBER}</properties>
+                </hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+              </configs>
+              <projects>${KCI_MAC_SLAVE_INIT_JOB_NAME}</projects>
+              <condition>ALWAYS</condition>
+              <triggerWithNoParameters>false</triggerWithNoParameters>
+              <triggerFromChildProjects>false</triggerFromChildProjects>
+              <block>
+                <buildStepFailureThreshold>
+                  <name>FAILURE</name>
+                  <ordinal>2</ordinal>
+                  <color>RED</color>
+                  <completeBuild>true</completeBuild>
+                </buildStepFailureThreshold>
+                <unstableThreshold>
+                  <name>UNSTABLE</name>
+                  <ordinal>1</ordinal>
+                  <color>YELLOW</color>
+                  <completeBuild>true</completeBuild>
+                </unstableThreshold>
+                <failureThreshold>
+                  <name>FAILURE</name>
+                  <ordinal>2</ordinal>
+                  <color>RED</color>
+                  <completeBuild>true</completeBuild>
+                </failureThreshold>
+              </block>
+              <buildAllNodesWithLabel>false</buildAllNodesWithLabel>
+            </hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig>
+          </configs>
+        </hudson.plugins.parameterizedtrigger.TriggerBuilder>
+        <hudson.plugins.parameterizedtrigger.TriggerBuilder plugin="parameterized-trigger@2.35.1">
+          <configs>
+            <hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig>
+              <configs>
+                <org.jvnet.jenkins.plugins.nodelabelparameter.parameterizedtrigger.NodeLabelBuildParameter plugin="nodelabelparameter@1.7.2">
+                  <name>BuildMachine</name>
+                  <nodeLabel>windows</nodeLabel>
+                </org.jvnet.jenkins.plugins.nodelabelparameter.parameterizedtrigger.NodeLabelBuildParameter>
+                <hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+                  <properties>PROP_FILE_PATH=workspace/${JOB_NAME}/ci_config
+PROP_ZIP_FILE_NAME=${JOB_NAME}
+PROP_FILE_NAME=${appidkey}_Config_Win
+BUILD_MACHINE=windows
+PROP_ROOT_DIR=${WIN_KCI_PROPERTIES_ROOT_DIRECTORY}
+EXECUTE_PIPELINE=${executePipeline}
+ANDROID_TARGET_SLAVE_IN_PIPELINE=ios
+PARENT_BUILD_NUMBER=${BUILD_NUMBER}</properties>
+                </hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+              </configs>
+              <projects>${KCI_WIN_SLAVE_INIT_JOB_NAME}</projects>
+              <condition>ALWAYS</condition>
+              <triggerWithNoParameters>false</triggerWithNoParameters>
+              <triggerFromChildProjects>false</triggerFromChildProjects>
+              <block>
+                <buildStepFailureThreshold>
+                  <name>FAILURE</name>
+                  <ordinal>2</ordinal>
+                  <color>RED</color>
+                  <completeBuild>true</completeBuild>
+                </buildStepFailureThreshold>
+                <unstableThreshold>
+                  <name>UNSTABLE</name>
+                  <ordinal>1</ordinal>
+                  <color>YELLOW</color>
+                  <completeBuild>true</completeBuild>
+                </unstableThreshold>
+                <failureThreshold>
+                  <name>FAILURE</name>
+                  <ordinal>2</ordinal>
+                  <color>RED</color>
+                  <completeBuild>true</completeBuild>
+                </failureThreshold>
+              </block>
+              <buildAllNodesWithLabel>false</buildAllNodesWithLabel>
+            </hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig>
+          </configs>
+        </hudson.plugins.parameterizedtrigger.TriggerBuilder>
+      </conditionalbuilders>
+    </org.jenkinsci.plugins.conditionalbuildstep.ConditionalBuilder>
+    <org.jenkinsci.plugins.conditionalbuildstep.ConditionalBuilder plugin="conditional-buildstep@1.3.6">
+      <runner class="org.jenkins_ci.plugins.run_condition.BuildStepRunner$Fail" plugin="run-condition@1.0"/>
+      <runCondition class="org.jenkins_ci.plugins.run_condition.core.StringsMatchCondition" plugin="run-condition@1.0">
+        <arg1>${TEST_AUTOMATION_ENABLED}</arg1>
+        <arg2>true</arg2>
+        <ignoreCase>true</ignoreCase>
+      </runCondition>
+      <conditionalbuilders>
+        <hudson.plugins.parameterizedtrigger.TriggerBuilder plugin="parameterized-trigger@2.35.1">
+          <configs>
+            <hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig>
+              <configs>
+                <hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+                  <properties>PARENT_BUILD_NUMBER=${BUILD_NUMBER}
+binaryname=${binaryname}
+BASE_FOLDER=$KONYCI_CI_S3_BASE_URL/$KONYCI_CI_S3_SUB_FOLDER_URL/${JOB_NAME}/build${BUILD_NUMBER}
+MAIL_RECIPIENTS=${KONYCI_CI_MAIL_RECIPIENTS}
+PROP_FILE_PATH=jobs/${JOB_NAME}/workspace/ci_config
+PROP_ZIP_FILE_NAME=${JOB_NAME}</properties>
+                </hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+                <hudson.plugins.parameterizedtrigger.FileBuildParameters>
+                  <propertiesFile>$JENKINS_HOME/jobs/${JOB_NAME}/workspace/ci_config/DeviceFarmCLI.properties</propertiesFile>
+                  <failTriggerOnMissing>true</failTriggerOnMissing>
+                  <useMatrixChild>false</useMatrixChild>
+                  <onlyExactRuns>false</onlyExactRuns>
+                </hudson.plugins.parameterizedtrigger.FileBuildParameters>
+              </configs>
+              <projects>ProjectName_TestAutomation</projects>
+              <condition>ALWAYS</condition>
+              <triggerWithNoParameters>false</triggerWithNoParameters>
+              <triggerFromChildProjects>false</triggerFromChildProjects>
+              <buildAllNodesWithLabel>false</buildAllNodesWithLabel>
+            </hudson.plugins.parameterizedtrigger.BlockableBuildTriggerConfig>
+          </configs>
+        </hudson.plugins.parameterizedtrigger.TriggerBuilder>
+      </conditionalbuilders>
+    </org.jenkinsci.plugins.conditionalbuildstep.ConditionalBuilder>
+  </builders>
+  <publishers>
+    <hudson.plugins.parameterizedtrigger.BuildTrigger plugin="parameterized-trigger@2.35.1">
+      <configs>
+        <hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
+          <configs>
+            <hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+              <properties>PARENT_BUILD_NUMBER=${BUILD_NUMBER}
+PARENT_JOB_NAME=${JOB_NAME}
+PROPERTY_FILE_PATH=${WORKSPACE}\\ci_config\\${appidkey}_Config.properties
+EXECUTE_PIPELINE=${executePipeline}
+BuildMachineOS=${KCI_MACHINE_LABEL}
+ANDROID_TARGET_SLAVE_IN_PIPELINE=ios
+KICKSTARTER_JOB_NAME=${JOB_NAME}
+PROP_FILE_NAME=${appidkey}_Config</properties>
+            </hudson.plugins.parameterizedtrigger.PredefinedBuildParameters>
+          </configs>
+          <projects>aaf-ArchiveAndEnableOTA</projects>
+          <condition>SUCCESS</condition>
+          <triggerWithNoParameters>false</triggerWithNoParameters>
+          <triggerFromChildProjects>false</triggerFromChildProjects>
+        </hudson.plugins.parameterizedtrigger.BuildTriggerConfig>
+      </configs>
+    </hudson.plugins.parameterizedtrigger.BuildTrigger>
+  </publishers>
+  <buildWrappers>
+    <EnvInjectBuildWrapper plugin="envinject@2.1.3">
+      <info>
+        <propertiesFilePath>$WORKSPACE\ci_config\Alticor_Config.properties</propertiesFilePath>
+        <secureGroovyScript plugin="script-security@1.33">
+          <script></script>
+          <sandbox>false</sandbox>
+        </secureGroovyScript>
+        <loadFilesFromMaster>false</loadFilesFromMaster>
+      </info>
+    </EnvInjectBuildWrapper>
+  </buildWrappers>
+</project>

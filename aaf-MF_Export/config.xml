@@ -1,0 +1,122 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.14.1">
+  <actions/>
+  <description>A job that pushes app services from the Kony Mobile Fabric Console into a Git server. This delivers the following benefits for your project:&#xd;
+It requires:&#xd;
+* An existing configuration of your app services in Mobile Fabric. This job won&apos;t create them for you.&#xd;
+* An existing git repository. This job won&apos;t create it for you.&#xd;
+* Mobile Fabric credentials.&#xd;
+* Git credentials.</description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>EXPORT_REPO_URL</name>
+          <description>The Git URL of the repository where you wish to store and version your Kony Mobile Fabric app.
+https://konyci-src.ci.konycloud.com/[Git org or user name]/[Project name]-MF.git</description>
+          <defaultValue>https://konyci-src.ci.konycloud.com/[Git org or user name]/[Project name]-MF.git</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>EXPORT_REPO_BRANCH</name>
+          <description>The branch of the Git repository where you wish to store and version your Kony Mobile Fabric app. Ideally you should always push to the &quot;develop&quot; branch and only merge into &quot;master&quot; when you&apos;re certain your integrations are stable. </description>
+          <defaultValue>develop</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.1.14">
+          <name>GIT_CREDENTIALS</name>
+          <description>Credentials for Github Enterprise (at https://konyci-src.ci.konycloud.com) with write privileges for the repository and branch selected above.</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>MOBILE_FABRIC_ACCOUNT_ID</name>
+          <description>The nine (9) digit identifier of the Kony Mobile Fabric cloud account (at https://manage.kony.com) where the Mobile Fabric app you want to version is defined. The ID for the &quot;KonyCI&quot; cloud account is &quot;100004737&quot;.</description>
+          <defaultValue>100004737</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>MOBILE_FABRIC_APP_ID</name>
+          <description>The name of the Kony Mobile Fabric app you want to version, as it appears in the Mobile Fabric Console.</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.1.14">
+          <name>MF_CREDENTIALS</name>
+          <description>Credentials for Kony Mobile Fabric (at https://manage.kony.com) with read privileges for the Cloud account and App selected above.</description>
+          <defaultValue>SureshMF</defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>MF_CLI_LOCATION</name>
+          <description>Where to fetch the Mobile Fabric Command Line Client from. Supports AWS S3 URL&apos;s or HTTPS URL&apos;s.
+For Kony App Factory, we keep a frozen snapshot of this at:
+s3://kony-ci0001-storage1/libraries/kony-appfactory-libraries/mfcli.jar</description>
+          <defaultValue>s3://kony-ci0001-storage1/libraries/kony-appfactory-libraries/mfcli.jar</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>COMMIT_AUTHOR</name>
+          <description>The name of the Git user that will be logged as the author of the changes pushed to your Git server:
+git config --local user.name [COMMIT_AUTHOR]</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>AUTHOR_EMAIL</name>
+          <description>The e-mail address of the Git user that will be logged as author of any changes committed to your Git server:
+git config --local user.email [AUTHOR_EMAIL]</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>COMMIT_MESSAGE</name>
+          <description>The comments with which the changes found to your MobileFabric definitions will be committed to your Git server:
+git commit -m [COMMIT_MESSAGE]</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>RECIPIENT_LIST</name>
+          <description>A comma separated list of the e-mail addresses of the people that must receive e-mail notifications on the success or failure of this job.</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.0.1">
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit></paramsToUseForLimit>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers>
+        <hudson.triggers.TimerTrigger>
+          <spec>0 H/6 * * *</spec>
+        </hudson.triggers.TimerTrigger>
+      </triggers>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@2.39">
+    <scm class="hudson.plugins.git.GitSCM" plugin="git@3.5.1">
+      <configVersion>2</configVersion>
+      <userRemoteConfigs>
+        <hudson.plugins.git.UserRemoteConfig>
+          <url>https://konyci-src.ci.konycloud.com/Kony/mobile-fabric-export.git</url>
+          <credentialsId>github</credentialsId>
+        </hudson.plugins.git.UserRemoteConfig>
+      </userRemoteConfigs>
+      <branches>
+        <hudson.plugins.git.BranchSpec>
+          <name>*/master</name>
+        </hudson.plugins.git.BranchSpec>
+      </branches>
+      <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+      <gitTool>Default</gitTool>
+      <submoduleCfg class="list"/>
+      <extensions>
+        <hudson.plugins.git.extensions.impl.WipeWorkspace/>
+      </extensions>
+    </scm>
+    <scriptPath>Jenkinsfile</scriptPath>
+    <lightweight>false</lightweight>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>

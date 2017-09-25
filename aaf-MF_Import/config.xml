@@ -1,0 +1,120 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<flow-definition plugin="workflow-job@2.14.1">
+  <actions/>
+  <description></description>
+  <keepDependencies>false</keepDependencies>
+  <properties>
+    <jenkins.model.BuildDiscarderProperty>
+      <strategy class="hudson.tasks.LogRotator">
+        <daysToKeep>-1</daysToKeep>
+        <numToKeep>30</numToKeep>
+        <artifactDaysToKeep>-1</artifactDaysToKeep>
+        <artifactNumToKeep>-1</artifactNumToKeep>
+      </strategy>
+    </jenkins.model.BuildDiscarderProperty>
+    <hudson.model.ParametersDefinitionProperty>
+      <parameterDefinitions>
+        <hudson.model.StringParameterDefinition>
+          <name>EXPORT_REPO_URL</name>
+          <description>The Git URL of the repository where you wish to store and version your Kony Mobile Fabric app. </description>
+          <defaultValue>https://konyci-src.ci.konycloud.com/Kony/fixer-mf.git</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>EXPORT_REPO_BRANCH</name>
+          <description>The branch of the Git repository where you wish to store and version your Kony Mobile Fabric app. </description>
+          <defaultValue>master</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.1.14">
+          <name>GIT_CREDENTIALS</name>
+          <description>Jenkins Credentials for Github Enterprise (at https://konyci-src.ci.konycloud.com) with write privileges for the repository and branch selected above.</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>MOBILE_FABRIC_ACCOUNT_ID</name>
+          <description>The nine (9) digit identifier of the Kony Mobile Fabric cloud account (at https://manage.kony.com) where the Mobile Fabric app you want to version is defined.</description>
+          <defaultValue>100004737</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>MOBILE_FABRIC_APP_ID</name>
+          <description>The name of the Kony Mobile Fabric app you want to version.</description>
+          <defaultValue>Fixer</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <com.cloudbees.plugins.credentials.CredentialsParameterDefinition plugin="credentials@2.1.14">
+          <name>MF_CREDENTIALS</name>
+          <description>Jenkins Credentials for Kony Mobile Fabric (at https://manage.kony.com) with read privileges for the Cloud account and App selected above.</description>
+          <defaultValue></defaultValue>
+          <credentialType>com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl</credentialType>
+          <required>true</required>
+        </com.cloudbees.plugins.credentials.CredentialsParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>MF_CLI_LOCATION</name>
+          <description>Where to fetch the mfcli.jar utility from. Supports AWS S3 URL&apos;s or HTTPS URL&apos;s.</description>
+          <defaultValue>s3://kony-ci0001-storage1/libraries/kony-appfactory-libraries/mfcli.jar</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>RECIPIENT_LIST</name>
+          <description>List of mail ids to send the mails</description>
+          <defaultValue>sourav.nayak@kony.com</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>TAG_ID</name>
+          <description>The release tag which is to be cloned and imported</description>
+          <defaultValue>v1.0</defaultValue>
+        </hudson.model.StringParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>OVERWRITE_EXISTING</name>
+          <description>If an changes are to be over-written in an existing app in MobileFabric</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.BooleanParameterDefinition>
+          <name>ENABLE_PUBLISH</name>
+          <description>If mobile fabric app needs to be published to an environment</description>
+          <defaultValue>false</defaultValue>
+        </hudson.model.BooleanParameterDefinition>
+        <hudson.model.StringParameterDefinition>
+          <name>MOBILE_FABRIC_ENVIRONMENT</name>
+          <description>Environment to which the app should be published. Required if PUBLISH_APP is checked</description>
+          <defaultValue></defaultValue>
+        </hudson.model.StringParameterDefinition>
+      </parameterDefinitions>
+    </hudson.model.ParametersDefinitionProperty>
+    <hudson.plugins.throttleconcurrents.ThrottleJobProperty plugin="throttle-concurrents@2.0.1">
+      <categories class="java.util.concurrent.CopyOnWriteArrayList"/>
+      <throttleEnabled>false</throttleEnabled>
+      <throttleOption>project</throttleOption>
+      <limitOneJobWithMatchingParams>false</limitOneJobWithMatchingParams>
+      <paramsToUseForLimit></paramsToUseForLimit>
+    </hudson.plugins.throttleconcurrents.ThrottleJobProperty>
+    <org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+      <triggers/>
+    </org.jenkinsci.plugins.workflow.job.properties.PipelineTriggersJobProperty>
+  </properties>
+  <definition class="org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition" plugin="workflow-cps@2.39">
+    <scm class="hudson.plugins.git.GitSCM" plugin="git@3.5.1">
+      <configVersion>2</configVersion>
+      <userRemoteConfigs>
+        <hudson.plugins.git.UserRemoteConfig>
+          <url>https://konyci-src.ci.konycloud.com/Kony/mobile-fabric-import.git</url>
+          <credentialsId>Git-JW5410</credentialsId>
+        </hudson.plugins.git.UserRemoteConfig>
+      </userRemoteConfigs>
+      <branches>
+        <hudson.plugins.git.BranchSpec>
+          <name>*/master</name>
+        </hudson.plugins.git.BranchSpec>
+      </branches>
+      <doGenerateSubmoduleConfigurations>false</doGenerateSubmoduleConfigurations>
+      <gitTool>Default</gitTool>
+      <submoduleCfg class="list"/>
+      <extensions>
+        <hudson.plugins.git.extensions.impl.CleanBeforeCheckout/>
+      </extensions>
+    </scm>
+    <scriptPath>Jenkinsfile</scriptPath>
+    <lightweight>false</lightweight>
+  </definition>
+  <triggers/>
+  <disabled>false</disabled>
+</flow-definition>
